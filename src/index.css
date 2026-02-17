@@ -1,0 +1,165 @@
+@import "tailwindcss";
+@import "antd/dist/reset.css";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    direction: rtl;
+  }
+
+  input, select, textarea {
+    font-family: inherit;
+  }
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b0b0b0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Ant Design overrides for RTL */
+.ant-form-item-label {
+  text-align: right;
+}
+
+/* Row hover effect for the list */
+.receipt-row:hover {
+  background-color: #e8f4fd !important;
+}
+
+.receipt-row.selected {
+  background-color: #cce5ff !important;
+}
+
+/* Editable cell */
+.editable-cell input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  text-align: inherit;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.editable-cell input:focus {
+  background: #fff;
+  border: 1px solid #1677ff;
+  border-radius: 2px;
+  padding: 0 4px;
+}
+
+/* Header toolbar button */
+.toolbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  min-width: 60px;
+  font-size: 11px;
+  color: #333;
+  border: none;
+  background: transparent;
+}
+
+.toolbar-btn:hover {
+  background-color: #dce8f8;
+}
+
+.toolbar-btn.active {
+  background-color: #ffd591;
+  border: 1px solid #fa8c16;
+}
+
+/* Status bar */
+.status-bar {
+  background: linear-gradient(to bottom, #e8e8e8, #d0d0d0);
+  border-top: 1px solid #b0b0b0;
+}
+
+/* Persian Date Picker overrides */
+.rmdp-input {
+  height: 20px !important;
+  font-size: 11px !important;
+  border: 1px solid #aac4de !important;
+  border-radius: 2px !important;
+  padding: 0 5px !important;
+  width: 100px !important;
+  text-align: center !important;
+  direction: ltr !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.rmdp-input:focus {
+  border-color: #4096ff !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rmdp-wrapper {
+  font-size: 12px !important;
+  font-family: inherit !important;
+  direction: rtl !important;
+}
+
+.rmdp-header-values {
+  font-size: 12px !important;
+}
+
+.rmdp-day {
+  font-size: 11px !important;
+}
+
+.rmdp-week-day {
+  font-size: 10px !important;
+}
+
+.rmdp-arrow-container:hover {
+  background: #e6f4ff !important;
+}
+
+.rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: #1677ff !important;
+}
+
+.rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+  background-color: #e6f4ff !important;
+  color: #1677ff !important;
+}
