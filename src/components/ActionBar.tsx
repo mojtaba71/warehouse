@@ -131,8 +131,9 @@ const ActionBar: FC<Props> = ({
     setSettingActive(false);
   };
 
-  const atFirst = currentRecord <= 1;
-  const atLast = currentRecord >= totalRecords;
+  const noSelection = currentRecord === 0;
+  const atFirst = noSelection || currentRecord <= 1;
+  const atLast = noSelection || currentRecord >= totalRecords;
 
   return (
     <div
