@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect, useCallback } from "react";
+import { type FC, useState, useEffect, useCallback, useMemo } from "react";
 import { Modal, message } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import Toolbar from "../components/Toolbar";
@@ -16,18 +16,15 @@ import {
 import {
   type ReceiptHeader,
   type ReceiptItem,
-  type ReceiptFooter,
 } from "../types";
 
-const computeFooter = (
-  items: ReceiptItem[],
-  base: ReceiptFooter,
-): ReceiptFooter => {
+// فوتر از روی آیتم‌ها محاسبه می‌شه (derived state) تا از circular dependency جلوگیری بشه
+const computeFooter = (items: ReceiptItem[]) => {
   const totalQuantity = items.reduce((s, i) => s + i.quantity, 0);
   const totalAmount = items.reduce((s, i) => s + i.totalPrice, 0);
   const totalWeight = items.reduce((s, i) => s + i.weight1 * i.quantity, 0);
   return {
-    ...base,
+    ...initFooter,
     totalQuantity,
     totalAmount,
     totalWeight: Math.round(totalWeight * 100) / 100,
@@ -37,16 +34,16 @@ const computeFooter = (
 const WarehouseReceipt: FC = () => {
   const [header, setHeader] = useState<ReceiptHeader>(initHeader);
   const [items, setItems] = useState<ReceiptItem[]>(initItems);
-  const [footer, setFooter] = useState<ReceiptFooter>(
-    computeFooter(initItems, initFooter),
-  );
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [mode, setMode] = useState<"view" | "edit" | "new">("view");
   const [footerTab, setFooterTab] = useState<FooterTab>("current");
   const [currentTime, setCurrentTime] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
 
-  // Live clock
+  // فوتر از آیتم‌ها derive میشه - نیازی به state جداگانه نیست
+  const footer = useMemo(() => computeFooter(items), [items]);
+
+  // ساعت زنده
   useEffect(() => {
     const tick = () => {
       const now = new Date();
@@ -70,51 +67,46 @@ const WarehouseReceipt: FC = () => {
 
   const handleItemUpdate = useCallback(
     (id: number, field: keyof ReceiptItem, value: string | number) => {
-      setItems((prev) => {
-        const updated = prev.map((item) => {
+      setItems((prev) =>
+        prev.map((item) => {
           if (item.id !== id) return item;
           const next = { ...item, [field]: value };
           if (field === "quantity" || field === "unitPrice") {
             next.totalPrice = next.quantity * next.unitPrice;
           }
           return next;
-        });
-        setFooter(computeFooter(updated, footer));
-        return updated;
-      });
+        }),
+      );
       setMode("edit");
     },
-    [footer],
+    [],
   );
 
   const handleAdd = useCallback(() => {
-    const newId = Math.max(...items.map((i) => i.id), 0) + 1;
-    const newItem: ReceiptItem = {
-      id: newId,
-      rowNumber: items.length + 1,
-      productCode: "",
-      productName: "",
-      productNameEn: "",
-      barcode: "",
-      invoiceNumber: "",
-      weight1: 0,
-      weight2: 0,
-      weight3: 0,
-      weight4: 0,
-      quantity: 0,
-      unitPrice: 0,
-      totalPrice: 0,
-      deliverySource: "محصول",
-      deliveryDestination: "کارخانه",
-    };
     setItems((prev) => {
-      const updated = [...prev, newItem];
-      setFooter(computeFooter(updated, footer));
-      return updated;
+      const newId = prev.reduce((max, i) => Math.max(max, i.id), 0) + 1;
+      const newItem: ReceiptItem = {
+        id: newId,
+        rowNumber: prev.length + 1,
+        productCode: "",
+        productName: "",
+        productNameEn: "",
+        barcode: "",
+        invoiceNumber: "",
+        weight1: 0,
+        weight2: 0,
+        weight3: 0,
+        weight4: 0,
+        quantity: 0,
+        unitPrice: 0,
+        totalPrice: 0,
+        deliverySource: "محصول",
+        deliveryDestination: "کارخانه",
+      };
+      return [...prev, newItem];
     });
-    setSelectedId(newId);
     setMode("new");
-  }, [items, footer]);
+  }, []);
 
   const handleDelete = useCallback(() => {
     if (!selectedId) return;
@@ -126,18 +118,16 @@ const WarehouseReceipt: FC = () => {
       cancelText: "خیر",
       direction: "rtl",
       onOk: () => {
-        setItems((prev) => {
-          const updated = prev
+        setItems((prev) =>
+          prev
             .filter((i) => i.id !== selectedId)
-            .map((i, idx) => ({ ...i, rowNumber: idx + 1 }));
-          setFooter(computeFooter(updated, footer));
-          return updated;
-        });
+            .map((i, idx) => ({ ...i, rowNumber: idx + 1 })),
+        );
         setSelectedId(null);
         messageApi.success("سطر با موفقیت حذف شد");
       },
     });
-  }, [selectedId, footer, messageApi]);
+  }, [selectedId, messageApi]);
 
   const handleConfirm = useCallback(() => {
     messageApi.success("رسید با موفقیت ثبت شد");
@@ -147,7 +137,6 @@ const WarehouseReceipt: FC = () => {
   const handleCancel = useCallback(() => {
     setItems(initItems);
     setHeader(initHeader);
-    setFooter(computeFooter(initItems, initFooter));
     setSelectedId(null);
     setMode("view");
     messageApi.info("تغییرات لغو شد");
@@ -166,26 +155,22 @@ const WarehouseReceipt: FC = () => {
     >
       {contextHolder}
 
-      {/* Window title bar */}
+      {/* نوار عنوان پنجره */}
       <div
         className="flex items-center justify-between bg-linear-to-b from-[#1c5c9e] to-[#1a4f8a] px-3 py-1.5 text-white select-none"
         dir="rtl"
       >
         <span className="text-sm font-semibold">رسید انبار - ریالی</span>
         <div className="flex gap-2">
-          <button className="w-4 h-4 bg-yellow-400 rounded-full hover:bg-yellow-300 transition-colors" />
-          <button className="w-4 h-4 bg-green-400 rounded-full hover:bg-green-300 transition-colors" />
-          <button className="w-4 h-4 bg-red-500 rounded-full hover:bg-red-400 transition-colors" />
+          <button className="w-4 h-4 bg-yellow-400 rounded-full hover:bg-yellow-300 transition-colors" aria-label="minimize" />
+          <button className="w-4 h-4 bg-green-400 rounded-full hover:bg-green-300 transition-colors" aria-label="maximize" />
+          <button className="w-4 h-4 bg-red-500 rounded-full hover:bg-red-400 transition-colors" aria-label="close" />
         </div>
       </div>
 
-      {/* Toolbar */}
       <Toolbar />
-
-      {/* Header form */}
       <HeaderForm header={header} onChange={handleHeaderChange} />
 
-      {/* Item list - takes remaining space */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <ItemList
           items={items}
@@ -196,14 +181,12 @@ const WarehouseReceipt: FC = () => {
         />
       </div>
 
-      {/* Footer summary */}
       <FooterSummary
         footer={footer}
         activeTab={footerTab}
         onTabChange={setFooterTab}
       />
 
-      {/* Action bar */}
       <ActionBar
         onAdd={handleAdd}
         onDelete={handleDelete}
@@ -215,7 +198,6 @@ const WarehouseReceipt: FC = () => {
         totalRecords={items.length}
       />
 
-      {/* Status bar */}
       <StatusBar
         currentRecord={currentIdx >= 0 ? currentIdx + 1 : 0}
         totalRecords={items.length}
