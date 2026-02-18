@@ -6,7 +6,6 @@ import {
   productOptions,
   deliverySourceOptions,
   deliveryDestinationOptions,
-  type ProductOption,
 } from '../data/fakeData';
 
 interface Props {
