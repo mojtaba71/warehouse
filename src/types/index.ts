@@ -63,6 +63,8 @@ export interface ReceiptFooter {
 
 export type EditableField = keyof ReceiptItem;
 
+export type LookupType = 'product' | 'deliverySource' | 'deliveryDestination';
+
 export interface ColumnDef {
   key: EditableField;
   label: string;
@@ -70,4 +72,5 @@ export interface ColumnDef {
   editable: boolean;
   type: 'text' | 'number';
   align: 'right' | 'left' | 'center';
+  lookup?: LookupType;
 }
