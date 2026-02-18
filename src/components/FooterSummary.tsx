@@ -156,7 +156,7 @@ const FooterSummary: FC<Props> = ({ footer, activeTab, onTabChange }) => {
           <Row><Col last><Field label="جمع اضافات" lw={LW4}><VI value={footer.totalAdditions} flex={1} ltr /><Rial /></Field></Col></Row>
           <Row><Col last><Field label="جمع قیمت تمام‌شده" lw={LW4}><VI value={footer.totalFree} flex={1} ltr /><Rial /></Field></Col></Row>
           <Row><Col last><Field label="جمع کسورات" lw={LW4}><VI value={footer.totalDiscounts} flex={1} ltr /><Rial /></Field></Col></Row>
-          <Row last><Col last><Field label="قابل پرداخت" lw={LW4}><VI value={footer.payableTax} flex={1} ltr /><Rial /></Field></Col></Row>
+          <Row last><Col last><Field label="قابل پرداخت" lw={LW4}><VI value={footer.totalAmount + footer.totalAdditions - footer.totalDiscounts} flex={1} ltr /><Rial /></Field></Col></Row>
         </div>
 
       </div>
